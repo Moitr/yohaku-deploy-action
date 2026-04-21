@@ -197,27 +197,27 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             set -e
-            source $HOME/.bashrc
-            basedir=$HOME/yohaku
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            basedir=$HOME/shiro
             workdir=$basedir/${{ github.run_number }}
             mkdir -p $workdir
             mkdir -p $basedir/.cache
-            mv /tmp/yohaku/release.zip $workdir/release.zip
-            install -m 644 /tmp/yohaku/ecosystem.config.js $basedir/ecosystem.config.js
+            mv /tmp/shiro/release.zip $workdir/release.zip
+            install -m 644 /tmp/shiro/ecosystem.config.js $basedir/ecosystem.config.js
             cd $workdir
             unzip -qq -o $workdir/release.zip
-            rm -r /tmp/yohaku
-            rm -rf $workdir/${{ env.STANDALONE_SUBPATH }}/.env
-            ln -s $HOME/yohaku/.env $workdir/${{ env.STANDALONE_SUBPATH }}/.env
+            rm -r /tmp/shiro
+            rm -rf $workdir/standalone/apps/web/.env
+            ln -s $HOME/shiro/.env $workdir/standalone/apps/web/.env
             export NEXT_SHARP_PATH=$(npm root -g)/sharp
-            # https://github.com/Unitech/pm2/issues/3054
-            # symlink workdir node entry file to basedir
-            ln -sf $workdir/${{ env.STANDALONE_SUBPATH }}/server.js $basedir/server.js
-            mkdir -p $workdir/${{ env.STANDALONE_SUBPATH }}/.next
-            rm -rf $workdir/${{ env.STANDALONE_SUBPATH }}/.next/cache
-            ln -sf $basedir/.cache $workdir/${{ env.STANDALONE_SUBPATH }}/.next/cache
+            ln -sf $workdir/standalone/apps/web/server.js $basedir/server.js
+            ln -sf $workdir/standalone/apps/web/.next $basedir/.next
+            mkdir -p $workdir/standalone/apps/web/.next
+            rm -rf $workdir/standalone/apps/web/.next/cache
+            ln -sf $basedir/.cache $workdir/standalone/apps/web/.next/cache
             cd $basedir
-            if pm2 describe Yohaku >/dev/null 2>&1; then
+            if pm2 describe Shiroi >/dev/null 2>&1; then
               pm2 reload ecosystem.config.js --update-env
             else
               pm2 start ecosystem.config.js --update-env
